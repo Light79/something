@@ -1,0 +1,195 @@
+CREATE DATABASE MockProject
+GO
+USE MockProject
+GO
+
+CREATE TABLE ReferenceData(
+RefID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+RefCode VARCHAR(256),
+RefValue NUMERIC
+)
+GO
+
+CREATE TABLE [User](
+UserID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+Account VARCHAR(256),
+Email VARCHAR(256),
+[Role] VARCHAR(256),
+[Password] VARCHAR(256)
+)
+GO
+
+CREATE TABLE TrustDistric(
+TrustDistricID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+Name VARCHAR(256),
+[Description] VARCHAR(max),
+TrustRegionID INT NOT NULL,
+)
+GO
+ALTER TABLE dbo.TrustDistric ADD CONSTRAINT FK_TrustDistic FOREIGN KEY (TrustRegionID) REFERENCES TrustRegion(TrustRegionID)
+GO
+
+CREATE TABLE TrustRegion(
+TrustRegionID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+Name VARCHAR(256),
+[Description] VARCHAR(256),
+CountryID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.TrustRegion ADD CONSTRAINT FK_TrustRegion FOREIGN KEY (CountryID) REFERENCES Country(CountryID)
+GO
+
+CREATE TABLE Country(
+CountryID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+CountryName VARCHAR(256)
+)
+GO
+
+CREATE TABLE County(
+CountyID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+CountryID INT NOT NULL,
+CountyName VARCHAR(256)
+)
+GO
+ALTER TABLE dbo.County ADD CONSTRAINT FK_County FOREIGN KEY (CountryID) REFERENCES Country(CountryID)
+GO
+
+CREATE TABLE Town(
+TownID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+CountyID INT NOT NULL,
+CountryID INT NOT NULL,
+TownName VARCHAR(256)
+)
+GO
+ALTER TABLE dbo.Town ADD CONSTRAINT FK_Town1 FOREIGN KEY (CountryID) REFERENCES Country(CountryID)
+GO
+ALTER TABLE dbo.Town ADD CONSTRAINT FK_Town2 FOREIGN KEY (CountyID) REFERENCES County(CountyID)
+GO
+
+CREATE TABLE [Address](
+AddressID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+PostCode NUMERIC,
+TownID INT NOT NULL,
+CountyID INT NOT NULL,
+CountryID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.[Address] ADD CONSTRAINT FK_Address1 FOREIGN KEY (CountryID) REFERENCES Country(CountryID)
+GO
+ALTER TABLE dbo.[Address] ADD CONSTRAINT FK_Address2 FOREIGN KEY (CountyID) REFERENCES County(CountyID)
+GO
+ALTER TABLE dbo.[Address] ADD CONSTRAINT FK_Address3 FOREIGN KEY (TownID) REFERENCES Town(TownID)
+GO
+
+
+CREATE TABLE SupportingMaterial(
+SupportingMaterialID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+OrgID INT NOT NULL,
+UserID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.SupportingMaterial ADD CONSTRAINT FK_SupportingMaterial1 FOREIGN KEY (UserID) REFERENCES dbo.[User](UserID)
+GO
+ALTER TABLE dbo.SupportingMaterial ADD CONSTRAINT FK_SupportingMaterial2 FOREIGN KEY (OrgID) REFERENCES Organisantion(OrgID)
+GO
+
+CREATE TABLE GovOfficeRegion(
+GovOfficeRegionID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+GovOfficeRegionName VARCHAR(256),
+CountyID INT NOT NULL,
+CountryID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.GovOfficeRegion ADD CONSTRAINT FK_GovOfficeRegion1 FOREIGN KEY (CountryID) REFERENCES Country(CountryID)
+GO
+ALTER TABLE dbo.GovOfficeRegion ADD CONSTRAINT FK_GovOfficeRegion2 FOREIGN KEY (CountyID) REFERENCES County(CountyID)
+GO
+
+
+CREATE TABLE Directorate(
+DirectorateID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+OrgID INT NOT NULL,
+ContactID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.Directorate ADD CONSTRAINT FK_Directorate1 FOREIGN KEY (OrgID) REFERENCES Organisantion(OrgID)
+GO
+ALTER TABLE dbo.Directorate ADD CONSTRAINT FK_Directorate2 FOREIGN KEY (ContactID) REFERENCES Contact(ContactID)
+GO
+
+CREATE TABLE Organisantion(
+OrgID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+OrgName VARCHAR(256),
+ContactID INT NOT NULL,
+IsActive BIT
+)
+GO
+ALTER TABLE dbo.Organisantion ADD CONSTRAINT FK_Organisantion FOREIGN KEY (ContactID) REFERENCES Contact(ContactID)
+GO
+
+CREATE TABLE Programme(
+ProgrammeID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+ContactID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.Programme ADD CONSTRAINT FK_Programme FOREIGN KEY (ContactID) REFERENCES Contact(ContactID)
+GO
+
+CREATE TABLE [Service](
+ServiceID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+ContactID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.[Service] ADD CONSTRAINT FK_Service FOREIGN KEY (ContactID) REFERENCES Contact(ContactID)
+GO
+
+CREATE TABLE Department(
+DepartmentID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+DirectorateID INT NOT NULL,
+ContactID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.Department ADD CONSTRAINT FK_Department1 FOREIGN KEY (DirectorateID) REFERENCES dbo.Directorate(DirectorateID)
+GO
+ALTER TABLE dbo.Department ADD CONSTRAINT FK_Department2 FOREIGN KEY (ContactID) REFERENCES Contact(ContactID)
+GO
+
+CREATE TABLE Team(
+TeamID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+DepartmentID INT NOT NULL,
+ContactID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.Team ADD CONSTRAINT FK_Team1 FOREIGN KEY (DepartmentID) REFERENCES dbo.Department(DepartmentID)
+GO
+ALTER TABLE dbo.Team ADD CONSTRAINT FK_Team2 FOREIGN KEY (ContactID) REFERENCES Contact(ContactID)
+GO
+
+CREATE TABLE Contact(
+ContactID INT PRIMARY KEY NOT NULL,
+FirstName VARCHAR(256),
+ManagerID INT NOT NULL,
+AdressID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.Contact ADD CONSTRAINT FK_Contact FOREIGN KEY (ManagerID) REFERENCES dbo.Contact(ContactID)
+GO
+ALTER TABLE dbo.Contact ADD CONSTRAINT FK_Contact2 FOREIGN KEY (AdressID) REFERENCES [Address](AddressID)
+GO
+
+CREATE TABLE Premise(
+PremiseID INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+ServiceID INT NOT NULL
+)
+GO
+ALTER TABLE dbo.Premise ADD CONSTRAINT FK_Premise FOREIGN KEY (ServiceID) REFERENCES dbo.[Service](ServiceID)
+GO
+
+CREATE VIEW Org_Add_View
+AS
+SELECT OrgID,OrgName,TownName+' '+CountyName+' '+CountryName AS [Head Address],PostCode,FirstName AS [Contact],IsActive
+FROM dbo.[Address],dbo.Contact,dbo.Country,dbo.County,dbo.Organisantion,dbo.Town
+WHERE [Address].AddressID= dbo.Contact.AdressID AND [dbo].[Address].CountyID = dbo.County.CountyID AND dbo.Country.CountryID = [dbo].[Address].CountryID AND [dbo].[Address].TownID = dbo.Town.TownID
+GO
+
+

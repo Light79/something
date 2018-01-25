@@ -1,0 +1,69 @@
+﻿@model IEnumerable<Model.EF.Org_Add_View>
+
+    @{
+        ViewBag.Title = "Index";
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+    <h2>Index</h2>
+
+    <p>
+        @Html.ActionLink("Create New", "Create")
+    </p>
+    <div class="panel-body">
+
+        <table width="100%" class="table table-striped table-bordered table-hover" id="dataTables-example">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.OrgName)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Head_Address)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.PostCode)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Contact)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.IsActive)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.OrgName)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Head_Address)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.PostCode)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Contact)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.IsActive)
+                        </td>
+                        <td id="row_@item.OrgID">
+                            @Html.ActionLink("Edit", "Edit", new { id = item.OrgID }) |
+                            @Html.ActionLink("Detail", "Detail", new { id = item.OrgID }) |
+                            @*@Ajax.ActionLink("Delete", "Delete", new { @id = item.OrgID }, new AjaxOptions
+                            {
+                                Confirm = "Are you sure want delete this record?",
+                                OnComplete = "$('#row_" + @item.OrgID + "').remove()",
+                                HttpMethod = "Delete"
+                            })*@
+                            </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
